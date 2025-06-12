@@ -1,5 +1,6 @@
 import re
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -93,63 +94,84 @@ def generate_rss(c, h):
     # Find all event blocks (each event is in a div with class 'sortie')
     events = soup.find_all("div", class_="sortie")
 
+    # Prepare event data for parallel processing
+    event_data = []
     for event in events:
         # Extract event title from the intitule div
         title_elem = event.find("div", class_="intitule")
         if title_elem:
             title = title_elem.get_text(strip=True)
-
+            
             # Extract date information
             date_text = None
             for text in event.stripped_strings:
                 if text.startswith("le ") or text.startswith("du "):
                     date_text = text
                     break
-
+            
             # Parse the date
             event_date = None
             if date_text:
                 event_date = parse_date(date_text)
-
+            
             # Find the registration link
             link = None
             registration_link = event.find("a", class_="packClub")
             if registration_link and "href" in registration_link.attrs:
                 link = registration_link["href"]
-
+            
             # If no registration link found, try to find the detail link
             if not link:
                 detail_link = event.find("a", class_="lienDetail")
                 if detail_link and "data-sortie-id" in detail_link.attrs:
                     sortie_id = detail_link["data-sortie-id"]
                     link = f"https://extranet-clubalpin.com/app/out/out.php?s=6&c={sortie_id}"
-
+            
             # If still no link found, use the main URL
             if not link:
                 link = URL
+            
+            event_data.append({
+                'title': title,
+                'date_text': date_text,
+                'event_date': event_date,
+                'link': link
+            })
 
-            # Get the event description
-            description = get_event_description(link)
-
-            # Add the entry to the feed
-            fe = fg.add_entry()
-            fe.title(title)
-            fe.link(href=link)
-
-            # Build the description
-            desc_parts = [title]
-            if date_text:
-                desc_parts.append(f"Date: {date_text}")
-            if description:
-                desc_parts.append("\nDescription:")
-                desc_parts.append(description)
-
-            fe.description("\n".join(desc_parts))
-
-            # Add the date if available
-            if event_date:
-                fe.pubDate(event_date)
-                fe.updated(event_date)
+    # Fetch descriptions in parallel
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_event = {
+            executor.submit(get_event_description, event['link']): event 
+            for event in event_data
+        }
+        
+        for future in as_completed(future_to_event):
+            event = future_to_event[future]
+            try:
+                description = future.result()
+                
+                # Add the entry to the feed
+                fe = fg.add_entry()
+                fe.title(event['title'])
+                fe.link(href=event['link'])
+                
+                # Build the description
+                desc_parts = [event['title']]
+                if event['date_text']:
+                    desc_parts.append(f"Date: {event['date_text']}")
+                if description:
+                    desc_parts.append("\nDescription:")
+                    desc_parts.append(description)
+                
+                fe.description("\n".join(desc_parts))
+                
+                # Add the date if available
+                if event['event_date']:
+                    fe.pubDate(event['event_date'])
+                    fe.updated(event['event_date'])
+                    
+            except Exception as e:
+                print(f"Error processing event {event['title']}: {str(e)}")
 
     return fg.rss_str(pretty=True)
 
