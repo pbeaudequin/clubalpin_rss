@@ -7,9 +7,10 @@ Type=simple
 User=pbeaudequin
 WorkingDirectory=/home/pbeaudequin/clubalpin_rss
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/home/philippe.beaudequin/clubalpin_rss/venv/bin/gunicorn --workers 1 --bind 0.0.0.0:9191 wsgi:app
+ExecStart=/home/pbeaudequin/clubalpin_rss/venv/bin/gunicorn --workers 1 --bind 0.0.0.0:9191 wsgi:app
 Restart=always
 RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
+q
