@@ -51,27 +51,43 @@ To run the checks manually:
 pre-commit run --all-files
 ```
 
-## Manual Usage (without service)
+### Manual Usage
 
-If you want to run the server manually without the service:
+#### Development Server
+
+For development purposes, you can run the Flask development server:
 
 1. Activate the virtual environment:
 ```bash
 source venv/bin/activate
 ```
 
-2. Start the server:
+2. Start the development server:
 ```bash
 python scrape_to_rss.py
 ```
 
-The server will start on port 5000.
+#### Production Server
+
+For production use, the service uses Gunicorn as the WSGI server. You can also run it manually:
+
+1. Activate the virtual environment:
+```bash
+source venv/bin/activate
+```
+
+2. Start the production server:
+```bash
+gunicorn --workers 1 --bind 0.0.0.0:9191 wsgi:app
+```
+
+The server will start on port 9191.
 
 ## Accessing the RSS Feed
 
 Access the RSS feed by making a GET request to:
 ```
-http://localhost:5000/rss?c=0640&h=c3dc07dc20
+http://localhost:9191/rss?c=0640&h=c3dc07dc20
 ```
 
 Required parameters:
@@ -125,7 +141,8 @@ The generated RSS feed includes:
 ## Development
 
 The server is built using:
-- Flask for the web server
+- Flask for the web framework
+- Gunicorn as the production WSGI server
 - BeautifulSoup4 for HTML parsing
 - Feedgen for RSS feed generation
 - Requests for HTTP requests
@@ -135,6 +152,7 @@ The server is built using:
 ```
 clubalpin_rss/
 ├── scrape_to_rss.py      # Main server code
+├── wsgi.py              # WSGI entry point
 ├── requirements.txt      # Python dependencies
 ├── setup.sh             # Virtual environment setup script
 ├── install_service.sh   # Service installation script
