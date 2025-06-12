@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=philippe.beaudequin
-WorkingDirectory=/Users/philippe.beaudequin/clubalpin_rss
+User=pbeaudequin
+WorkingDirectory=/Users/pbeaudequin/clubalpin_rss
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/Users/philippe.beaudequin/clubalpin_rss/venv/bin/python /Users/philippe.beaudequin/clubalpin_rss/scrape_to_rss.py
+ExecStart=/Users/pbeaudequin/clubalpin_rss/venv/bin/python /Users/pbeaudequin/clubalpin_rss/scrape_to_rss.py
 Restart=always
 RestartSec=10
 
