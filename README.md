@@ -2,6 +2,16 @@
 
 This is a simple web server that generates RSS feeds from the Club Alpin Français Cannes-Côte d'Azur website. It scrapes the events page and converts it into an RSS feed format.
 
+## Purpose
+
+The main purpose of this server is to provide real-time notifications when new climbing/canyoning outings are published on the club's website. This is achieved by:
+
+1. Converting the club's event page into an RSS feed
+2. Using IFTTT (If This Then That) to monitor the RSS feed
+3. Automatically sending email notifications when new outings are detected
+
+This setup ensures you never miss a new outing opportunity, as you'll receive an email notification as soon as it's published on the club's website.
+
 ## Prerequisites
 
 - Python 3.x
