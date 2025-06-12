@@ -155,6 +155,7 @@ def generate_rss(c, h):
 
 
 @app.route("/rss")
+@app.route("/clubalpin_rss")
 def rss_feed():
     # Get parameters from request
     c = request.args.get("c")
