@@ -6,25 +6,70 @@ This is a simple web server that generates RSS feeds from the Club Alpin França
 
 - Python 3.x
 - pip (Python package installer)
+- systemd (for running as a service)
+- git (for pre-commit hooks)
 
 ## Installation
 
-1. Clone this repository or download the files
-2. Install the required dependencies:
+1. Clone this repository:
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/pbeaudequin/clubalpin_rss.git
+cd clubalpin_rss
 ```
 
-## Usage
-
-1. Start the server:
+2. Run the setup script to create a virtual environment and install dependencies:
 ```bash
-python3 scrape_to_rss.py
+./setup.sh
+```
+
+3. Install pre-commit hooks:
+```bash
+pre-commit install
+```
+
+4. Install and enable the systemd service:
+```bash
+./install_service.sh
+```
+
+The service will be installed and started automatically. It will also be configured to start at system boot.
+
+## Development
+
+### Code Quality Tools
+
+This project uses several code quality tools that run automatically on commit:
+
+- **Black**: Code formatter
+- **isort**: Import sorter
+- **flake8**: Code linter
+- **bandit**: Security linter
+- **pre-commit-hooks**: Various git hooks
+
+To run the checks manually:
+```bash
+pre-commit run --all-files
+```
+
+## Manual Usage (without service)
+
+If you want to run the server manually without the service:
+
+1. Activate the virtual environment:
+```bash
+source venv/bin/activate
+```
+
+2. Start the server:
+```bash
+python scrape_to_rss.py
 ```
 
 The server will start on port 5000.
 
-2. Access the RSS feed by making a GET request to:
+## Accessing the RSS Feed
+
+Access the RSS feed by making a GET request to:
 ```
 http://localhost:5000/rss?c=0640&h=c3dc07dc20
 ```
@@ -33,11 +78,33 @@ Required parameters:
 - `c`: Club identifier (e.g., "0640")
 - `h`: Hash parameter (e.g., "c3dc07dc20")
 
-## Example
+## Service Management
 
-Using curl to test the feed:
+Once installed as a service, you can manage it using systemd commands:
+
+- Check status:
 ```bash
-curl "http://localhost:5000/rss?c=0640&h=c3dc07dc20"
+sudo systemctl status clubalpin_rss
+```
+
+- Stop the service:
+```bash
+sudo systemctl stop clubalpin_rss
+```
+
+- Start the service:
+```bash
+sudo systemctl start clubalpin_rss
+```
+
+- Restart the service:
+```bash
+sudo systemctl restart clubalpin_rss
+```
+
+- View logs:
+```bash
+sudo journalctl -u clubalpin_rss
 ```
 
 ## Error Handling
@@ -51,8 +118,9 @@ The server will return:
 
 The generated RSS feed includes:
 - Title of each event
+- Date and time of the event
 - Link to the event registration or details page
-- Description of the event
+- Full description of the event from the detail page
 
 ## Development
 
@@ -60,4 +128,18 @@ The server is built using:
 - Flask for the web server
 - BeautifulSoup4 for HTML parsing
 - Feedgen for RSS feed generation
-- Requests for HTTP requests 
+- Requests for HTTP requests
+
+## Project Structure
+
+```
+clubalpin_rss/
+├── scrape_to_rss.py      # Main server code
+├── requirements.txt      # Python dependencies
+├── setup.sh             # Virtual environment setup script
+├── install_service.sh   # Service installation script
+├── clubalpin_rss.service # systemd service file
+├── .pre-commit-config.yaml # Pre-commit hooks configuration
+├── pyproject.toml       # Linter configurations
+└── README.md            # This file
+```
